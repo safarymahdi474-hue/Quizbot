@@ -127,10 +127,10 @@ def translate_to_fa(text: str) -> str:
         return text
 
 
-async def post_daily_quizzes(context: ContextTypes.DEFAULT_TYPE):
-    """جاب روزانه: ۲ کوییز گیمینگ در کانال پست می‌کند."""
+async def post_daily_quizzes(context: ContextTypes.DEFAULT_TYPE, amount: int = 1):
+    """جاب روزانه: یک یا چند کوییز گیمینگ در کانال پست می‌کند."""
     try:
-        questions = fetch_gaming_quizzes(amount=2)
+        questions = fetch_gaming_quizzes(amount=amount)
     except Exception as e:
         logger.error(f"خطا در گرفتن کوییز: {e}")
         return
@@ -174,9 +174,21 @@ def main():
 
     # جاب روزانه - ساعت 18:00 به وقت سرور را اینجا تغییر بده (UTC پیش‌فرضه)
     job_queue = application.job_queue
+    # سه نوبت پست کوییز در روز - هر نوبت با ۱ کوییز
     job_queue.run_daily(
         post_daily_quizzes,
-        time=__import__("datetime").time(hour=14, minute=30),  # تقریبا 18:00 ایران (UTC+3:30)
+        time=__import__("datetime").time(hour=7, minute=30),  # 11:00 صبح ایران
+        name="quiz_morning",
+    )
+    job_queue.run_daily(
+        post_daily_quizzes,
+        time=__import__("datetime").time(hour=14, minute=30),  # 18:00 عصر ایران
+        name="quiz_evening",
+    )
+    job_queue.run_daily(
+        post_daily_quizzes,
+        time=__import__("datetime").time(hour=18, minute=30),  # 22:00 شب ایران
+        name="quiz_night",
     )
 
     application.run_polling(allowed_updates=Update.ALL_TYPES)
