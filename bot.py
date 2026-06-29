@@ -176,7 +176,7 @@ def main():
     job_queue = application.job_queue
     job_queue.run_daily(
         post_daily_quizzes,
-        time=__import__("datetime").time(hour=7, minute=30),  # 11:00 صبح ایران (UTC+3:30)
+        time=__import__("datetime").time(hour=14, minute=30),  # تقریبا 18:00 ایران (UTC+3:30)
     )
 
     application.run_polling(allowed_updates=Update.ALL_TYPES)
