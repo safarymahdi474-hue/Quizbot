@@ -22,6 +22,7 @@ import logging
 import random
 import html
 import requests
+from deep_translator import GoogleTranslator
 from collections import defaultdict
 
 from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
@@ -117,6 +118,15 @@ def fetch_gaming_quizzes(amount: int = 2):
     return data["results"]
 
 
+def translate_to_fa(text: str) -> str:
+    """ترجمه متن انگلیسی به فارسی. اگر ترجمه شکست بخورد، متن اصلی برگردانده می‌شود."""
+    try:
+        return GoogleTranslator(source="en", target="fa").translate(text)
+    except Exception as e:
+        logger.warning(f"ترجمه ناموفق بود، متن اصلی استفاده می‌شود: {e}")
+        return text
+
+
 async def post_daily_quizzes(context: ContextTypes.DEFAULT_TYPE):
     """جاب روزانه: ۲ کوییز گیمینگ در کانال پست می‌کند."""
     try:
@@ -133,6 +143,10 @@ async def post_daily_quizzes(context: ContextTypes.DEFAULT_TYPE):
         options = incorrect + [correct]
         random.shuffle(options)
         correct_index = options.index(correct)
+
+        # ترجمه سوال و گزینه‌ها به فارسی
+        question_text = translate_to_fa(question_text)
+        options = [translate_to_fa(opt) for opt in options]
 
         # تلگرام پول، حداکثر ۱۰۰ کاراکتر برای هر گزینه و ۳۰۰ برای سوال قبول می‌کنه
         question_text = question_text[:290]
